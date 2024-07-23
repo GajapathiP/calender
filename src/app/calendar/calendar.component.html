@@ -1,0 +1,134 @@
+<mat-card [class.col-md-3]="!showFullYearCalendar" [class.col-12]="showFullYearCalendar" class="demo-inline-calendar-card p-0 m-l-10 m-t-40 calendar-shadow float-right">
+  <div class="header">
+    <p class="text-center">School Calendar</p>
+    <span class="material-symbols-outlined add-event" (click)="openPopup()">add</span>
+  </div>
+
+  <ng-container>
+    <ng-template #calendereventadd>
+      <form [formGroup]="calendarEventForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="fill">
+          <mat-label>Title</mat-label>
+          <input matInput formControlName="title">
+        </mat-form-field>
+      
+        <mat-form-field appearance="fill">
+          <mat-label>Description</mat-label>
+          <input matInput formControlName="description">
+        </mat-form-field>
+      
+        <mat-form-field appearance="fill">
+          <mat-label>Color</mat-label>
+          <input matInput formControlName="color">
+        </mat-form-field>
+      
+        <mat-form-field appearance="fill">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startDatePicker" formControlName="startDate">
+          <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #startDatePicker></mat-datepicker>
+        </mat-form-field>
+      
+        <mat-form-field appearance="fill">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="endDatePicker" formControlName="endDate">
+          <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #endDatePicker></mat-datepicker>
+        </mat-form-field>
+      
+        <button mat-raised-button color="primary" type="submit">Submit</button>
+      </form>
+      
+    </ng-template>
+  </ng-container>
+
+  <!-- Monthly Calendar View -->
+  <div *ngIf="!showFullYearCalendar">
+    <div class="calendar-header m-t-30 m-b-20">
+      <span class="material-symbols-outlined" (click)="prevMonth()">arrow_back_ios</span>
+      <span class="f-s-18 f-w-600 thememaincolor m-r-64 m-l-64">{{ monthNames[currentMonth] }} {{ currentYear }}</span>
+      <span class="material-symbols-outlined" (click)="nextMonth()">arrow_forward_ios</span>
+    </div>
+    <table class="calendar">
+      <thead>
+        <tr>
+          <ng-container *ngFor="let dayName of dayNames">
+            <th>{{ dayName }}</th>
+          </ng-container>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let week of calendar">
+          <td class="selected-date" *ngFor="let day of week"
+              (click)="selectDate(day)"
+              [ngClass]="{
+                'today': isToday(day, currentMonth),
+                'no-date': day === null,
+                'sunday': day !== null && isSunday(day, currentMonth)
+              }"
+              [style.background-color]="getEventColor(day, currentMonth)">
+            <div class="day-number">{{ day }}</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr>
+    <div *ngIf="!showFullYearCalendar">
+      <div *ngFor="let event of getEventsForMonth(currentMonth, currentYear)">
+        <li class="list-style-none">
+          <span [ngStyle]="{'background': event.color}" class="desc-dot"></span>
+          <span class="text-transform-captial"><b>{{ event.title }}</b></span>- {{ event.startDate | date:'mediumDate' }} to {{ event.endDate | date:'mediumDate' }}
+        </li>
+      </div>
+    </div>
+    <span class="d-flex justify-content-center thememaincolor view-full-calendar m-b-10" *ngIf="!showFullYearCalendar" (click)="toggleFullYearCalendar()">View Full Year Calendar</span>
+  </div>
+
+  <!-- Full Year Calendar View -->
+  <div *ngIf="showFullYearCalendar" class="col-12">
+    <span (click)="toggleMonthCalendar()">View Monthly Calendar</span>
+    <div class="calendar-header">
+      <span class="material-symbols-outlined" (click)="prevYear()">arrow_back_ios</span>
+      <span class="f-s-18 f-w-600">{{ currentYear }}</span>
+      <span class="material-symbols-outlined" (click)="nextYear()">arrow_forward_ios</span>
+    </div>
+    <div class="full-year-calendar">
+      <div *ngFor="let month of monthNames; let i = index" class="month-calendar">
+        <h3>{{ month }} {{ currentYear }}</h3>
+        <table class="calendar">
+          <thead>
+            <tr>
+              <ng-container *ngFor="let dayName of dayNames">
+                <th>{{ dayName }}</th>
+              </ng-container>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let week of generateCalendarForMonth(i)">
+              <td class="selected-date" *ngFor="let day of week"
+                  (click)="selectDate(day)"
+                  [ngClass]="{
+                    'today': isToday(day, i),
+                    'no-date': day === null,
+                    'sunday': day !== null && isSunday(day, i)
+                  }"
+                  [style.background-color]="getEventColor(day, i)">
+                <div class="day-number">{{ day }}</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr>
+        <!-- Apply actions for the specific month -->
+        <div *ngFor="let event of getEventsForMonth(i, currentYear)">
+          <li class="list-style-none">
+            <span [ngStyle]="{'background': event.color}" class="desc-dot"></span>
+            <span class="text-transform-captial"><b>{{ event.title }}</b></span>- {{ event.startDate | date:'mediumDate' }} to {{ event.endDate | date:'mediumDate' }}
+          </li>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-card>
